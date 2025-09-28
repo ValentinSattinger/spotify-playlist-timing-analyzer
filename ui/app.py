@@ -188,12 +188,6 @@ def main():
     elif analyze_button:
         st.warning("Please enter a playlist URL.")
 
-    # Footer
-    st.markdown("---")
-    st.markdown(
-        "Built with Streamlit, Spotipy, and Pandas. "
-        "Make sure to configure your Spotify API credentials."
-    )
 
 
 if __name__ == "__main__":
