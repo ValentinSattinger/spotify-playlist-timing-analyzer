@@ -79,6 +79,7 @@ def main():
     # Playlist URL input
     playlist_url = st.sidebar.text_input(
         "Spotify Playlist URL",
+        value="https://open.spotify.com/playlist/6oQtOu9OmfQCL5teB03nC6?si=dfa5f9973eca421e",
         placeholder="https://open.spotify.com/playlist/... or spotify:playlist:...",
         help="Paste a Spotify playlist URL, URI, or ID"
     )
