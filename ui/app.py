@@ -1,10 +1,18 @@
-"""Streamlit application for Spotify Playlist Timing & BPM Analyzer."""
+"""Streamlit application for Spotify Playlist Timing Analyzer."""
 
 import io
+import sys
+import os
 from datetime import datetime, date
+from pathlib import Path
 
 import pytz
 import streamlit as st
+
+# Add project root to Python path for imports
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
 from spotify.playlist import load_playlist_rows
 from spotify.client import SpotifyClient
