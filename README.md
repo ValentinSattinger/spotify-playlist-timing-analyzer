@@ -18,6 +18,24 @@ A lightweight local tool that ingests a public Spotify playlist URL, fetches tra
 - Python 3.8+
 - Spotify Developer Account
 
+## 🌐 Deploy to Streamlit Cloud
+
+1. **Fork this repository** on GitHub
+2. **Go to [Streamlit Community Cloud](https://share.streamlit.io/)**
+3. **Click "New app"** and connect your GitHub account
+4. **Select your forked repository**
+5. **Set the main file path to**: `ui/app.py`
+6. **Add your Spotify credentials** in the secrets section:
+   ```
+   spotify_client_id = "your_client_id_here"
+   spotify_client_secret = "your_client_secret_here"
+   ```
+7. **Click "Deploy!"**
+
+Your app will be live at `https://your-username-spotify-playlist-timing-analyzer.streamlit.app`
+
+## 🏠 Local Development
+
 ### 1. Create Spotify App
 
 1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
