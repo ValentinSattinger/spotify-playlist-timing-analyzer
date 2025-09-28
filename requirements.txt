@@ -3,6 +3,7 @@ spotipy
 pandas
 python-dotenv
 pydantic
+pydantic-settings
 tenacity
 tzlocal
 pytz
