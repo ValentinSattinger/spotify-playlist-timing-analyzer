@@ -3,7 +3,7 @@
 import io
 import sys
 import os
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from pathlib import Path
 
 import pytz
@@ -33,6 +33,16 @@ COMMON_TIMEZONES = [
     "Australia/Sydney",
     "UTC"
 ]
+
+
+def get_next_saturday():
+    """Get the next upcoming Saturday date."""
+    today = date.today()
+    # Saturday is weekday 5 (Monday=0, Sunday=6)
+    days_until_saturday = (5 - today.weekday()) % 7
+    if days_until_saturday == 0:  # If today is Saturday, get next Saturday
+        days_until_saturday = 7
+    return today + timedelta(days=days_until_saturday)
 
 
 @st.cache_data
@@ -85,8 +95,8 @@ def main():
     with col2:
         start_date = st.date_input(
             "Start Date (Optional)",
-            value=date.today(),
-            help="Date for the playlist start (defaults to today)"
+            value=get_next_saturday(),
+            help="Date for the playlist start (defaults to next Saturday)"
         )
 
     # Timezone selection
@@ -107,15 +117,12 @@ def main():
         use_container_width=True
     )
 
-    # Refresh cache button
-    refresh_button = st.sidebar.button(
-        "🔄 Refresh Data",
-        help="Clear cache and reload playlist data"
-    )
-
     # Main content area
     if analyze_button and playlist_url.strip():
         try:
+            # Clear cache before loading new data
+            load_playlist_cached.clear()
+            
             with st.spinner("Loading playlist data..."):
                 # Parse playlist ID for caching key
                 client = SpotifyClient()
@@ -168,12 +175,6 @@ def main():
 
     elif analyze_button:
         st.warning("Please enter a playlist URL.")
-
-    # Clear cache if refresh button is pressed
-    if refresh_button:
-        load_playlist_cached.clear()
-        st.success("Cache cleared! You can now reload playlist data.")
-        st.rerun()
 
     # Footer
     st.markdown("---")
