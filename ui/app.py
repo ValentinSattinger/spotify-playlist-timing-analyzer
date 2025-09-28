@@ -89,7 +89,7 @@ def main():
     with col1:
         start_time = st.time_input(
             "Start Time",
-            value=datetime.strptime("14:00", "%H:%M").time(),
+            value=datetime.strptime("20:30", "%H:%M").time(),
             help="When the playlist will start playing"
         )
 
