@@ -46,19 +46,20 @@ def get_next_saturday():
 
 
 @st.cache_data
-def load_playlist_cached(playlist_url: str, start_dt: datetime, tz_name: str):
+def load_playlist_cached(playlist_url: str, start_dt: datetime, tz_name: str, crossover_seconds: int):
     """Cached version of playlist loading.
 
     Args:
         playlist_url: Spotify playlist URL/URI/ID
         start_dt: Start datetime for timing calculations
         tz_name: Timezone name
+        crossover_seconds: Seconds lost at end of each song due to crossfade
 
     Returns:
         tuple: (rows, stats) from load_playlist_rows
     """
     tz = pytz.timezone(tz_name)
-    return load_playlist_rows(playlist_url, start_dt, tz)
+    return load_playlist_rows(playlist_url, start_dt, tz, crossover_seconds)
 
 
 def main():
@@ -107,6 +108,16 @@ def main():
         help="Timezone for approximate time calculations"
     )
 
+    # Crossover seconds setting
+    crossover_seconds = st.sidebar.number_input(
+        "Crossover Seconds",
+        min_value=0,
+        max_value=30,
+        value=6,
+        step=1,
+        help="Seconds lost at the end of each song due to Spotify crossfade (default: 6s)"
+    )
+
     # Combine date and time
     start_dt = datetime.combine(start_date, start_time)
 
@@ -129,7 +140,7 @@ def main():
                 playlist_id = client.parse_playlist_id(playlist_url.strip())
 
                 # Load playlist data
-                rows, stats = load_playlist_cached(playlist_url.strip(), start_dt, timezone_name)
+                rows, stats = load_playlist_cached(playlist_url.strip(), start_dt, timezone_name, crossover_seconds)
 
             if not rows:
                 st.error("No tracks found in this playlist.")

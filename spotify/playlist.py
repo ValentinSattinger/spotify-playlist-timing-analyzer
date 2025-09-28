@@ -58,7 +58,8 @@ def _compute_playlist_stats(tracks: List[TrackRaw]) -> Dict:
 def load_playlist_rows(
     playlist_url: str,
     start_dt: datetime,
-    tz: pytz.BaseTzInfo
+    tz: pytz.BaseTzInfo,
+    crossover_seconds: int = 0
 ) -> Tuple[List[TrackRow], Dict]:
     """Load and process playlist data into display-ready rows.
 
@@ -66,6 +67,7 @@ def load_playlist_rows(
         playlist_url: Spotify playlist URL, URI, or ID
         start_dt: Starting datetime for approximate time calculations
         tz: Timezone for approximate time calculations
+        crossover_seconds: Seconds lost at end of each song due to crossfade
 
     Returns:
         tuple: (list of TrackRow objects, stats dict)
@@ -86,12 +88,17 @@ def load_playlist_rows(
     tracks = [_extract_track_raw(track_data) for track_data in track_data_list]
 
 
-    # Step 4: Compute cumulative durations
-    durations_ms = [track.duration_ms for track in tracks]
+    # Step 4: Compute cumulative durations with crossover adjustment
+    crossover_ms = crossover_seconds * 1000  # Convert to milliseconds
+    durations_ms = [track.duration_ms - crossover_ms for track in tracks]
+    # Ensure no negative durations
+    durations_ms = [max(0, duration) for duration in durations_ms]
     cumulative_ms_list = compute_cumulative_ms(durations_ms)
 
-    # Step 5: Compute approximate times
-    approx_dts = approx_times(start_dt, cumulative_ms_list, tz)
+    # Step 5: Compute approximate start times (when each song starts)
+    # For start times, we need the cumulative time up to the previous song
+    start_times_ms = [0] + cumulative_ms_list[:-1]  # Start times (previous cumulative)
+    approx_dts = approx_times(start_dt, start_times_ms, tz)
 
     # Step 6: Build TrackRow objects
     rows = []

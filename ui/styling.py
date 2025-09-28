@@ -25,7 +25,7 @@ def create_playlist_dataframe(rows: List[TrackRow]) -> pd.DataFrame:
             'Artist': row.artists_display,
             'Song duration': row.duration_display,
             'Cumulative duration': row.cumulative_display,
-            'Approximate time': row.approx_time_display,
+            'Start time': row.approx_time_display,
             # Store raw values for styling (not displayed)
             '_duration_ms': row.duration_ms
         })
