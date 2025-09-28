@@ -1,0 +1,8 @@
+streamlit
+spotipy
+pandas
+python-dotenv
+pydantic
+tenacity
+tzlocal
+pytz
