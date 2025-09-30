@@ -85,6 +85,14 @@ def main():
         help="Paste a Spotify playlist URL, URI, or ID"
     )
 
+    # Time target mode setting
+    time_target_mode = st.sidebar.radio(
+        "Time Target Mode",
+        options=["Start Time", "End Time"],
+        index=0,
+        help="Choose whether to target the start time or end time of the playlist"
+    )
+
     # Start time inputs
     col1, col2 = st.sidebar.columns(2)
 
@@ -120,14 +128,6 @@ def main():
         value=6,
         step=1,
         help="Seconds lost at the end of each song due to Spotify crossfade (default: 6s)"
-    )
-
-    # Time target mode setting
-    time_target_mode = st.sidebar.radio(
-        "Time Target Mode",
-        options=["Start Time", "End Time"],
-        index=0,
-        help="Choose whether to target the start time or end time of the playlist"
     )
 
     # Combine date and time
