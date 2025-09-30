@@ -46,7 +46,7 @@ def get_next_saturday():
 
 
 @st.cache_data
-def load_playlist_cached(playlist_url: str, start_dt: datetime, tz_name: str, crossover_seconds: int):
+def load_playlist_cached(playlist_url: str, start_dt: datetime, tz_name: str, crossover_seconds: int, time_target_mode: str):
     """Cached version of playlist loading.
 
     Args:
@@ -54,12 +54,13 @@ def load_playlist_cached(playlist_url: str, start_dt: datetime, tz_name: str, cr
         start_dt: Start datetime for timing calculations
         tz_name: Timezone name
         crossover_seconds: Seconds lost at end of each song due to crossfade
+        time_target_mode: "Start Time" or "End Time"
 
     Returns:
         tuple: (rows, stats) from load_playlist_rows
     """
     tz = pytz.timezone(tz_name)
-    return load_playlist_rows(playlist_url, start_dt, tz, crossover_seconds)
+    return load_playlist_rows(playlist_url, start_dt, tz, crossover_seconds, time_target_mode)
 
 
 def main():
@@ -88,10 +89,12 @@ def main():
     col1, col2 = st.sidebar.columns(2)
 
     with col1:
+        time_label = "Start Time" if time_target_mode == "Start Time" else "End Time"
+        time_help = "When the playlist will start playing" if time_target_mode == "Start Time" else "When the playlist should end"
         start_time = st.time_input(
-            "Start Time",
+            time_label,
             value=datetime.strptime("20:30", "%H:%M").time(),
-            help="When the playlist will start playing"
+            help=time_help
         )
 
     with col2:
@@ -119,6 +122,14 @@ def main():
         help="Seconds lost at the end of each song due to Spotify crossfade (default: 6s)"
     )
 
+    # Time target mode setting
+    time_target_mode = st.sidebar.radio(
+        "Time Target Mode",
+        options=["Start Time", "End Time"],
+        index=0,
+        help="Choose whether to target the start time or end time of the playlist"
+    )
+
     # Combine date and time
     start_dt = datetime.combine(start_date, start_time)
 
@@ -141,7 +152,7 @@ def main():
                 playlist_id = client.parse_playlist_id(playlist_url.strip())
 
                 # Load playlist data
-                rows, stats = load_playlist_cached(playlist_url.strip(), start_dt, timezone_name, crossover_seconds)
+                rows, stats = load_playlist_cached(playlist_url.strip(), start_dt, timezone_name, crossover_seconds, time_target_mode)
 
             if not rows:
                 st.error("No tracks found in this playlist.")

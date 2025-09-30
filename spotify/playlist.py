@@ -1,6 +1,6 @@
 """Playlist data processing and assembly pipeline."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional
 
 import pytz
@@ -59,15 +59,17 @@ def load_playlist_rows(
     playlist_url: str,
     start_dt: datetime,
     tz: pytz.BaseTzInfo,
-    crossover_seconds: int = 0
+    crossover_seconds: int = 0,
+    time_target_mode: str = "Start Time"
 ) -> Tuple[List[TrackRow], Dict]:
     """Load and process playlist data into display-ready rows.
 
     Args:
         playlist_url: Spotify playlist URL, URI, or ID
-        start_dt: Starting datetime for approximate time calculations
+        start_dt: Target datetime (start or end time)
         tz: Timezone for approximate time calculations
         crossover_seconds: Seconds lost at end of each song due to crossfade
+        time_target_mode: "Start Time" or "End Time"
 
     Returns:
         tuple: (list of TrackRow objects, stats dict)
@@ -95,10 +97,18 @@ def load_playlist_rows(
     durations_ms = [max(0, duration) for duration in durations_ms]
     cumulative_ms_list = compute_cumulative_ms(durations_ms)
 
-    # Step 5: Compute approximate start times (when each song starts)
-    # For start times, we need the cumulative time up to the previous song
-    start_times_ms = [0] + cumulative_ms_list[:-1]  # Start times (previous cumulative)
-    approx_dts = approx_times(start_dt, start_times_ms, tz)
+    # Step 5: Compute approximate start times based on target mode
+    if time_target_mode == "Start Time":
+        # For start time targeting, first song starts at start_dt
+        start_times_ms = [0] + cumulative_ms_list[:-1]  # Start times (previous cumulative)
+        actual_start_dt = start_dt
+    else:
+        # For end time targeting, calculate when to start so playlist ends at start_dt
+        total_duration_ms = cumulative_ms_list[-1] if cumulative_ms_list else 0
+        actual_start_dt = start_dt - timedelta(milliseconds=total_duration_ms)
+        start_times_ms = [0] + cumulative_ms_list[:-1]  # Start times (previous cumulative)
+    
+    approx_dts = approx_times(actual_start_dt, start_times_ms, tz)
 
     # Step 6: Build TrackRow objects
     rows = []
