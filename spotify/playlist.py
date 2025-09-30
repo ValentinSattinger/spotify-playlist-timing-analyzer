@@ -60,7 +60,8 @@ def load_playlist_rows(
     start_dt: datetime,
     tz: pytz.BaseTzInfo,
     crossover_seconds: int = 0,
-    time_target_mode: str = "Start Time"
+    time_target_mode: str = "Start Time",
+    selected_song_index: int = None
 ) -> Tuple[List[TrackRow], Dict]:
     """Load and process playlist data into display-ready rows.
 
@@ -70,6 +71,7 @@ def load_playlist_rows(
         tz: Timezone for approximate time calculations
         crossover_seconds: Seconds lost at end of each song due to crossfade
         time_target_mode: "Start Time" or "End Time"
+        selected_song_index: Index of song to target for end time (0-based, None for last song)
 
     Returns:
         tuple: (list of TrackRow objects, stats dict)
@@ -103,9 +105,15 @@ def load_playlist_rows(
         start_times_ms = [0] + cumulative_ms_list[:-1]  # Start times (previous cumulative)
         actual_start_dt = start_dt
     else:
-        # For end time targeting, calculate when to start so playlist ends at start_dt
-        total_duration_ms = cumulative_ms_list[-1] if cumulative_ms_list else 0
-        actual_start_dt = start_dt - timedelta(milliseconds=total_duration_ms)
+        # For end time targeting, calculate when to start
+        if selected_song_index is not None and 0 <= selected_song_index < len(cumulative_ms_list):
+            # Target specific song - calculate when to start so selected song ends at start_dt
+            target_duration_ms = cumulative_ms_list[selected_song_index]
+            actual_start_dt = start_dt - timedelta(milliseconds=target_duration_ms)
+        else:
+            # Target last song - calculate when to start so playlist ends at start_dt
+            total_duration_ms = cumulative_ms_list[-1] if cumulative_ms_list else 0
+            actual_start_dt = start_dt - timedelta(milliseconds=total_duration_ms)
         start_times_ms = [0] + cumulative_ms_list[:-1]  # Start times (previous cumulative)
     
     approx_dts = approx_times(actual_start_dt, start_times_ms, tz)
